@@ -1,0 +1,55 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets">
+<h:head>
+<script src="js/glink-lib.js" />
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>
+	<ui:insert name="windowTitle"></ui:insert>
+</title>
+<link rel="stylesheet" type="text/css" href="css/fc.css" />
+
+</h:head>
+
+
+<body onload="getPage()">
+
+
+
+
+<div id="wrap">
+
+
+
+<div id="header">
+
+</div> <!-- end header -->
+
+
+
+
+    
+<div id="content">
+<ui:include src="sections/menu.xhtml" />
+<ui:insert name='contentBody' />    
+</div><!-- end content -->
+</div><!-- end wrap -->
+
+
+
+<div id="footer">
+
+<div id="footer_container">
+
+   <div id="footer_links">
+   <!--  Footer items go here! -->
+  </div><!-- end footer_links -->
+  </div><!-- end footer_container-->
+  
+</div><!-- end footer -->
+
+
+</body>
+</html>
