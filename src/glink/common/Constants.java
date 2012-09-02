@@ -9,7 +9,7 @@ public class Constants {
 		//  Class for Sun Grid Engine(prior to acquisition by Oracle).
 		public static class SGE {
 			
-			public static final String TYPE = "Sun Grid Engine";
+			public static final String NAME = "Sun Grid Engine";
 			
 			//  Class for Sun Grid Engine accounting file.
 			public static class AccountingFile {
