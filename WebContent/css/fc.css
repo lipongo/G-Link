@@ -245,7 +245,7 @@ td.postdoc{
 /* footer */
 div#footer{
 	position: relative;
-	margin: -150px auto 0px auto; /* negative value of footer height */
+	margin: -125px auto 0px auto; /* negative value of footer height */
 	height: 150px;
 	clear:both;
   background:url(../images/footer_bg.jpg) repeat-x;

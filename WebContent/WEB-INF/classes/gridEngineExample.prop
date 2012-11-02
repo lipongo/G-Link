@@ -1,0 +1,8 @@
+gridType=SGE
+gridName=IGS
+gridRootPath=/local/packages/sge-root
+gridBinaryPath=/local/packages/sge-root/bin
+gridArchType=lx24-amd64
+gridCell=igs
+gridAccountingFileName=/usr/local/packages/sge-root/igs/common/accounting
+gridScanTime=500

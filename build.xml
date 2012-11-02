@@ -1,0 +1,74 @@
+<project name="GLink" default="dist" basedir=".">
+
+	<description>GLink build.xml for creating the WAR file</description>
+	
+	<!-- set global properties for this build -->
+	<property name="src" location="src"/>
+	<property name="build" location="build"/>
+	<property name="dist"  location="dist"/>
+	<property name="version" value="0.1" /> 
+
+	<path id="lib.path.ref">
+		<fileset dir="WebContent/WEB-INF/lib" includes="*.jar"/>
+	</path>
+
+	<target name="init">
+		<!-- Create the time stamp -->
+		<tstamp/>
+		<!-- Create the build directory structure used by compile -->
+		<mkdir dir="${build}"/>
+	</target>
+
+	<target name="compile" depends="init" description="compile the source " >
+		<!-- Compile the java code from ${src} into ${build} -->
+		<echo>Running compile task...</echo>
+
+		<antcall target="refresh" />
+
+		<javac srcdir="${src}" destdir="${build}">
+			<compilerarg value="-Xlint:unchecked"/>
+			<classpath refid="lib.path.ref"/>
+		</javac>
+
+	</target>
+
+	<target name="dist" depends="compile" description="generate the distribution" >
+		<!-- Create the distribution directory -->
+		<echo>Running dist task...</echo>
+                <mkdir dir="${dist}"/>
+
+		<!-- Build the war file -->
+		<war warfile="${dist}/${ant.project.name}.v${version}.war"
+			 webxml="WebContent/WEB-INF/web.xml" 
+			 manifest="WebContent/META-INF/MANIFEST.MF"
+		>
+
+			<fileset dir="WebContent" includes="*.jsf "/>
+			<fileset dir="WebContent" includes="*.xhtml "/>
+			<zipfileset file="WebContent/WEB-INF/faces-config.xml" prefix="WEB-INF"/>
+			<zipfileset file="WebContent/WEB-INF/classes/*" prefix="WEB-INF/classes"/>
+			<zipfileset dir="WebContent/images" prefix="images"/>
+			<zipfileset dir="WebContent/css" prefix="css"/>
+			<zipfileset dir="WebContent/sections" prefix="sections"/>
+			
+			<lib dir="WebContent/WEB-INF/lib"/>
+			<classes dir="${build}"/>
+		</war>
+			</target>
+
+	<target name="clean" description="clean up" >
+		<!-- Delete the ${build} and ${dist} directory trees -->
+		<echo>Running clean task...</echo>
+		<delete dir="${build}"/>
+		<delete dir="${dist}"/>
+  	</target>
+	
+	<target name="refresh" description="refresh project" if="eclipse.running">
+		<echo>Running refresh task...</echo>
+		<eclipse.refreshLocal resource="Tarsier" depth="infinite"/>
+		<echo>Refresh complete</echo>
+	</target>
+	
+	<target name="test" depends="dist">
+	</target>
+</project>

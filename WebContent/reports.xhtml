@@ -1,6 +1,7 @@
 <ui:composition xmlns="http://www.w3.org/1999/xhtml"
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:t="http://myfaces.apache.org/tomahawk"
       xmlns:ui="http://java.sun.com/jsf/facelets"
       template="Template.xhtml">
       
@@ -10,6 +11,19 @@
 	<ui:define name="contentBody">  
 		<p class="main_text">The Reports page will display the various reports to select from and allow for different ranges.  There should
 		be graphical displays and will eventually be AJAX.<br /></p>
+		<br/><br/>
+		<h:dataTable value="#{reports.reportEntries}" var="entries">
+			<h:column>
+			<f:facet name="header" ><h:outputText>Project Name</h:outputText>
+			</f:facet>
+			<h:outputText value="#{entries.projectName}" />
+			</h:column>
+			<h:column>
+				<f:facet name="header"><h:outputText>Job Count</h:outputText>
+				</f:facet>
+				<h:outputText value="#{entries.jobCount}" />
+			</h:column>
+		</h:dataTable>
 	</ui:define>
 </ui:composition>
     

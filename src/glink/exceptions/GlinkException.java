@@ -1,4 +1,4 @@
-package Exceptions;
+package glink.exceptions;
 
 public class GlinkException extends Exception {
 	

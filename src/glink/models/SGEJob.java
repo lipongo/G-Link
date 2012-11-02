@@ -5,9 +5,9 @@ import java.util.HashMap;
 import org.apache.commons.logging.impl.Log4JLogger;
 import org.apache.log4j.Logger;
 
-import Exceptions.GlinkException;
 
 import glink.common.Constants;
+import glink.exceptions.GlinkException;
 import glink.interfaces.models.Job;
 
 public class SGEJob implements Job {
