@@ -4,6 +4,7 @@ import glink.common.Constants;
 import glink.common.Constants.GridEngineTypes;
 import glink.common.Constants.Queries;
 import glink.common.Constants.Tables;
+import glink.interfaces.models.ReportEntry;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -13,8 +14,11 @@ import java.sql.ResultSet;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
@@ -25,7 +29,7 @@ public final class GlinkDAO {
 
 		//  Setting up database connection variables
 		private Properties properties = new Properties();
-		private static final String PROPERTIES_FILE = "localdatabase.prop";
+		private static final String PROPERTIES_FILE = "database.prop";
 		
 	    private String databaseServer;
 		
@@ -95,7 +99,9 @@ public final class GlinkDAO {
 	    public boolean getConnectionState() throws SQLException {
 	    	System.out.println(properties.toString());
 	    	openConnection();
-	    	return this.databaseConnection.isValid(0);
+	    	boolean isValid = this.databaseConnection.isValid(0);
+	    	closeConnection();
+	    	return isValid;
 	    }
 	    
 	    public void close() throws SQLException {
@@ -141,7 +147,6 @@ public final class GlinkDAO {
 	    	insertAccountingEntryQuery.setString(12, grantedPE);
 	    	boolean isSuccessful = insertAccountingEntryQuery.execute();
 	    	insertAccountingEntryQuery.close();
-	    	closeConnection();
 	    	return isSuccessful;
 	    }
 	    
@@ -276,16 +281,213 @@ public final class GlinkDAO {
 	    	}
 	    }
 	    
-	    public HashMap<String, Integer> getProjectsReport() throws SQLException {
+	    public List<ReportEntry> getProjectsReport(Long startTime, Long endTime) throws SQLException {
 	    	openConnection();
-	    	PreparedStatement selectProjectReportQuery = databaseConnection.prepareStatement(Queries.SELECT_PROJECT_ACCOUNT_PROJECT_NAME_COUNT);
+	    	PreparedStatement selectProjectReportQuery = databaseConnection.prepareStatement(Queries.SELECT_PROJECT_REPORT_BY_TIME);
+	    	selectProjectReportQuery.setLong(1, startTime/1000);
+	    	selectProjectReportQuery.setLong(2, endTime/1000);
 	    	selectProjectReportQuery.execute();
 	    	ResultSet selectProjectReportQueryResults = selectProjectReportQuery.getResultSet();
-	    	HashMap<String, Integer> projects = new HashMap<String, Integer>();
+	    	HashMap<String, ReportEntry> entries = new HashMap<String, ReportEntry>();
 	    	while (selectProjectReportQueryResults.next()) {
-	    		projects.put(selectProjectReportQueryResults.getString("p." + Tables.Projects.Fields.PROJECT_NAME), selectProjectReportQueryResults.getInt(Tables.ProjectAccount.Fields.JOB_COUNT));
+	    		if (entries.containsKey(selectProjectReportQueryResults.getString(Tables.Accounting.Fields.PROJECT))) {
+	    			ReportEntry reportEntry = entries.get(selectProjectReportQueryResults.getString(Tables.Accounting.Fields.PROJECT));
+	    			int jobCount = reportEntry.getJobCount();
+	    			reportEntry.setJobCount(++jobCount);
+	    			long timeInSeconds = reportEntry.getTimeInMilliseconds();
+	    			reportEntry.setTimeInMilliseconds(timeInSeconds + (selectProjectReportQueryResults.getLong(Tables.Accounting.Fields.END_TIME) - selectProjectReportQueryResults.getLong(Tables.Accounting.Fields.START_TIME)));
+	    			entries.put(selectProjectReportQueryResults.getString(Tables.Accounting.Fields.PROJECT), reportEntry);
+	    		} else {
+	    			ReportEntry reportEntry = new ReportEntry();
+	    			reportEntry.setProjectName(selectProjectReportQueryResults.getString(Tables.Accounting.Fields.PROJECT));
+	    			reportEntry.setJobCount(1);
+	    			reportEntry.setTimeInMilliseconds(selectProjectReportQueryResults.getLong(Tables.Accounting.Fields.END_TIME) - selectProjectReportQueryResults.getLong(Tables.Accounting.Fields.START_TIME));
+	    			entries.put(selectProjectReportQueryResults.getString(Tables.Accounting.Fields.PROJECT), reportEntry);
+	    		}
 	    	}
-	    	return projects;
+	    	closeConnection();
+	    	List<ReportEntry> reportEntries = new ArrayList<ReportEntry>();
+	    	for (Map.Entry<String, ReportEntry> entry : entries.entrySet()) {
+	    		reportEntries.add(entry.getValue());
+	    	}
+	    	return reportEntries;
+	    }
+	    
+	    public List<ReportEntry> getProjectsAccountReport(Long startTime, Long endTime) throws SQLException {
+	    	openConnection();
+	    	PreparedStatement selectProjectReportQuery = databaseConnection.prepareStatement(Queries.SELECT_PROJECT_ACCOUNT_REPORT_BY_TIME);
+	    	selectProjectReportQuery.setLong(1, startTime/1000);
+	    	selectProjectReportQuery.setLong(2, endTime/1000);
+	    	selectProjectReportQuery.execute();
+	    	ResultSet selectProjectReportQueryResults = selectProjectReportQuery.getResultSet();
+	    	HashMap<String, HashMap<String, ReportEntry>> entries = new HashMap<String, HashMap<String, ReportEntry>>();
+	    	while (selectProjectReportQueryResults.next()) {
+	    		if (entries.containsKey(selectProjectReportQueryResults.getString(Tables.Accounting.Fields.PROJECT))) {
+	    			HashMap<String, ReportEntry> accountMap = entries.get(selectProjectReportQueryResults.getString(Tables.Accounting.Fields.PROJECT));
+	    			ReportEntry reportEntry;
+	    			if (accountMap.containsKey(selectProjectReportQueryResults.getString(Tables.Accounting.Fields.OWNER))) {
+	    				reportEntry = accountMap.get(selectProjectReportQueryResults.getString(Tables.Accounting.Fields.OWNER));
+		    			int jobCount = reportEntry.getJobCount();
+		    			reportEntry.setJobCount(++jobCount);
+		    			long timeInSeconds = reportEntry.getTimeInMilliseconds();
+		    			reportEntry.setTimeInMilliseconds(timeInSeconds + (selectProjectReportQueryResults.getLong(Tables.Accounting.Fields.END_TIME) - selectProjectReportQueryResults.getLong(Tables.Accounting.Fields.START_TIME)));
+	    			} else {
+	    				reportEntry = new ReportEntry();
+		    			reportEntry.setProjectName(selectProjectReportQueryResults.getString(Tables.Accounting.Fields.PROJECT));
+		    			reportEntry.setAccountName(selectProjectReportQueryResults.getString(Tables.Accounting.Fields.OWNER));
+	    				reportEntry.setJobCount(1);
+	    				reportEntry.setTimeInMilliseconds((selectProjectReportQueryResults.getLong(Tables.Accounting.Fields.END_TIME) - selectProjectReportQueryResults.getLong(Tables.Accounting.Fields.START_TIME)));
+	    				
+	    			}
+	    			accountMap.put(selectProjectReportQueryResults.getString(Tables.Accounting.Fields.OWNER), reportEntry);
+	    			entries.put(selectProjectReportQueryResults.getString(Tables.Accounting.Fields.PROJECT), accountMap);
+	    		} else {
+	    			HashMap<String, ReportEntry> accountMap = new HashMap<String, ReportEntry>();
+    				ReportEntry reportEntry = new ReportEntry();
+	    			reportEntry.setProjectName(selectProjectReportQueryResults.getString(Tables.Accounting.Fields.PROJECT));
+	    			reportEntry.setAccountName(selectProjectReportQueryResults.getString(Tables.Accounting.Fields.OWNER));
+    				reportEntry.setJobCount(1);
+    				reportEntry.setTimeInMilliseconds((selectProjectReportQueryResults.getLong(Tables.Accounting.Fields.END_TIME) - selectProjectReportQueryResults.getLong(Tables.Accounting.Fields.START_TIME)));
+    				accountMap.put(reportEntry.getAccountName(), reportEntry);
+    				entries.put(selectProjectReportQueryResults.getString(Tables.Accounting.Fields.PROJECT), accountMap);
+	    		}
+	    	}
+	    	closeConnection();
+	    	List<ReportEntry> reportEntries = new ArrayList<ReportEntry>();
+	    	for (Map.Entry<String, HashMap<String, ReportEntry>> project : entries.entrySet()) {
+	    		int jobCount = 0;
+	    		long timeTotal = 0;
+	    		List<ReportEntry> projectAccountEntries = new ArrayList<ReportEntry>();
+	    		for (Map.Entry<String, ReportEntry> reportEntry : project.getValue().entrySet()) {
+	    			projectAccountEntries.add(reportEntry.getValue());
+	    			jobCount += reportEntry.getValue().getJobCount();
+	    			timeTotal += reportEntry.getValue().getTimeInMilliseconds();
+	    		}
+	    		ReportEntry projectReportEntry = new ReportEntry();
+	    		projectReportEntry.setJobCount(jobCount);
+	    		projectReportEntry.setTimeInMilliseconds(timeTotal);
+	    		projectReportEntry.setProjectName(project.getKey());
+	    		reportEntries.add(projectReportEntry);
+	    		reportEntries.addAll(projectAccountEntries);
+	    	}
+	    	return reportEntries;
+	    }
+	    
+	    public List<ReportEntry> getJobCountByAccounts(Long startTime, Long endTime) throws SQLException {
+	    	openConnection();
+	    	PreparedStatement selectAccountingQuery = databaseConnection.prepareStatement(Queries.SELECT_ACCOUNTING_BY_TIME);
+	    	selectAccountingQuery.setLong(1, startTime/1000);
+	    	selectAccountingQuery.setLong(2, endTime/1000);
+	    	selectAccountingQuery.execute();
+	    	ResultSet selectAccountingQueryResults = selectAccountingQuery.getResultSet();
+	    	HashMap<String, ReportEntry> accountsMap  = new HashMap<String, ReportEntry>();
+	    	while (selectAccountingQueryResults.next()) {
+	    		if (accountsMap.containsKey(selectAccountingQueryResults.getString(Tables.Accounting.Fields.OWNER))) {
+	    			ReportEntry reportEntry = accountsMap.get(selectAccountingQueryResults.getString(Tables.Accounting.Fields.OWNER));
+	    			reportEntry.setJobCount(reportEntry.getJobCount() + 1);
+	    			reportEntry.setTimeInMilliseconds(reportEntry.getTimeInMilliseconds() + (selectAccountingQueryResults.getLong(Tables.Accounting.Fields.END_TIME) - selectAccountingQueryResults.getLong(Tables.Accounting.Fields.START_TIME)));
+	    			accountsMap.put(selectAccountingQueryResults.getString(Tables.Accounting.Fields.OWNER), reportEntry);
+	    		} else {
+	    			ReportEntry reportEntry = new ReportEntry();
+	    			reportEntry.setAccountName(selectAccountingQueryResults.getString(Tables.Accounting.Fields.OWNER));
+	    			reportEntry.setJobCount(1);
+	    			reportEntry.setTimeInMilliseconds(selectAccountingQueryResults.getLong(Tables.Accounting.Fields.END_TIME) - selectAccountingQueryResults.getLong(Tables.Accounting.Fields.START_TIME));
+	    			accountsMap.put(selectAccountingQueryResults.getString(Tables.Accounting.Fields.OWNER), reportEntry);
+	    		}
+	    	}
+	    	closeConnection();
+	    	List<ReportEntry> reportEntries = new ArrayList<ReportEntry>();
+	    	for (Map.Entry<String, ReportEntry> entry : accountsMap.entrySet()) {
+	    		reportEntries.add(entry.getValue());
+	    	}
+	    	return reportEntries;
+	    }
+	    
+	    public List<ReportEntry> getJobCountByQueues(Long startTime, Long endTime) throws SQLException {
+	    	openConnection();
+	    	PreparedStatement selectAccountingQuery = databaseConnection.prepareStatement(Queries.SELECT_ACCOUNTING_BY_TIME);
+	    	selectAccountingQuery.setLong(1, startTime/1000);
+	    	selectAccountingQuery.setLong(2, endTime/1000);
+	    	selectAccountingQuery.execute();
+	    	ResultSet selectAccountingQueryResults = selectAccountingQuery.getResultSet();
+	    	HashMap<String, ReportEntry> queuesMap  = new HashMap<String, ReportEntry>();
+	    	while (selectAccountingQueryResults.next()) {
+	    		if (queuesMap.containsKey(selectAccountingQueryResults.getString(Tables.Accounting.Fields.QUEUE_NAME))) {
+	    			ReportEntry reportEntry = queuesMap.get(selectAccountingQueryResults.getString(Tables.Accounting.Fields.QUEUE_NAME));
+	    			reportEntry.setJobCount(reportEntry.getJobCount() + 1);
+	    			reportEntry.setTimeInMilliseconds(reportEntry.getTimeInMilliseconds() + (selectAccountingQueryResults.getLong(Tables.Accounting.Fields.END_TIME) - selectAccountingQueryResults.getLong(Tables.Accounting.Fields.START_TIME)));
+	    			queuesMap.put(selectAccountingQueryResults.getString(Tables.Accounting.Fields.QUEUE_NAME), reportEntry);
+	    		} else {
+	    			ReportEntry reportEntry = new ReportEntry();
+	    			reportEntry.setQueueName(selectAccountingQueryResults.getString(Tables.Accounting.Fields.QUEUE_NAME));
+	    			reportEntry.setJobCount(1);
+	    			reportEntry.setTimeInMilliseconds(selectAccountingQueryResults.getLong(Tables.Accounting.Fields.END_TIME) - selectAccountingQueryResults.getLong(Tables.Accounting.Fields.START_TIME));
+	    			queuesMap.put(selectAccountingQueryResults.getString(Tables.Accounting.Fields.QUEUE_NAME), reportEntry);
+	    		}
+	    	}
+	    	closeConnection();
+	    	List<ReportEntry> reportEntries = new ArrayList<ReportEntry>();
+	    	for (Map.Entry<String, ReportEntry> entry : queuesMap.entrySet()) {
+	    		reportEntries.add(entry.getValue());
+	    	}
+	    	return reportEntries;
+	    }
+	    //  Known bug, only one account is ever added per a queue, look into this.
+	    public List<ReportEntry> getQueuesAccountsReport(Long startTime, Long endTime) throws SQLException {
+	    	openConnection();
+	    	PreparedStatement selectAccountingQuery = databaseConnection.prepareStatement(Queries.SELECT_ACCOUNTING_BY_TIME);
+	    	selectAccountingQuery.setLong(1, startTime/1000);
+	    	selectAccountingQuery.setLong(2, endTime/1000);
+	    	selectAccountingQuery.execute();
+	    	ResultSet selectAccountingQueryResults = selectAccountingQuery.getResultSet();
+	    	HashMap<String, HashMap<String, ReportEntry>> queuesAccountsMap  = new HashMap<String, HashMap<String, ReportEntry>>();
+	    	while (selectAccountingQueryResults.next()) {
+	    		if (queuesAccountsMap.containsKey(selectAccountingQueryResults.getString(Tables.Accounting.Fields.QUEUE_NAME))) {
+	    			if (queuesAccountsMap.get(selectAccountingQueryResults.getString(Tables.Accounting.Fields.QUEUE_NAME)).containsKey(selectAccountingQueryResults.getString(Tables.Accounting.Fields.OWNER))) {
+	    				ReportEntry reportEntry = queuesAccountsMap.get(selectAccountingQueryResults.getString(Tables.Accounting.Fields.QUEUE_NAME)).get(selectAccountingQueryResults.getString(Tables.Accounting.Fields.OWNER));
+	    				reportEntry.setJobCount(reportEntry.getJobCount() + 1);
+	    				reportEntry.setTimeInMilliseconds(reportEntry.getTimeInMilliseconds() + (selectAccountingQueryResults.getLong(Tables.Accounting.Fields.END_TIME) - selectAccountingQueryResults.getLong(Tables.Accounting.Fields.START_TIME)));
+	    				HashMap<String, ReportEntry> accountsMap = queuesAccountsMap.get(selectAccountingQueryResults.getString(Tables.Accounting.Fields.QUEUE_NAME));
+	    				accountsMap.put(selectAccountingQueryResults.getString(Tables.Accounting.Fields.OWNER), reportEntry);
+	    				queuesAccountsMap.put(selectAccountingQueryResults.getString(Tables.Accounting.Fields.QUEUE_NAME), accountsMap);
+	    			} else {
+	    				ReportEntry reportEntry = new ReportEntry();
+	    				reportEntry.setQueueName(selectAccountingQueryResults.getString(Tables.Accounting.Fields.QUEUE_NAME));
+	    				reportEntry.setJobCount(1);
+	    				reportEntry.setAccountName(selectAccountingQueryResults.getString(Tables.Accounting.Fields.OWNER));
+	    				reportEntry.setTimeInMilliseconds(selectAccountingQueryResults.getLong(Tables.Accounting.Fields.END_TIME) - selectAccountingQueryResults.getLong(Tables.Accounting.Fields.START_TIME));
+	    				HashMap<String, ReportEntry> accountsMap = new HashMap<String, ReportEntry>();
+	    				accountsMap.put(selectAccountingQueryResults.getString(Tables.Accounting.Fields.OWNER), reportEntry);
+	    				queuesAccountsMap.put(selectAccountingQueryResults.getString(Tables.Accounting.Fields.QUEUE_NAME), accountsMap);
+	    			}
+	    		} else {
+    				ReportEntry reportEntry = new ReportEntry();
+    				reportEntry.setQueueName(selectAccountingQueryResults.getString(Tables.Accounting.Fields.QUEUE_NAME));
+    				reportEntry.setJobCount(1);
+    				reportEntry.setAccountName(selectAccountingQueryResults.getString(Tables.Accounting.Fields.OWNER));
+    				reportEntry.setTimeInMilliseconds(selectAccountingQueryResults.getLong(Tables.Accounting.Fields.END_TIME) - selectAccountingQueryResults.getLong(Tables.Accounting.Fields.START_TIME));
+    				HashMap<String, ReportEntry> accountsMap = new HashMap<String, ReportEntry>();
+    				accountsMap.put(selectAccountingQueryResults.getString(Tables.Accounting.Fields.OWNER), reportEntry);
+    				queuesAccountsMap.put(selectAccountingQueryResults.getString(Tables.Accounting.Fields.QUEUE_NAME), accountsMap);
+	    		}
+	    	}
+	    	closeConnection();
+	    	List<ReportEntry> reportEntries = new ArrayList<ReportEntry>();
+	    	for (Map.Entry<String, HashMap<String, ReportEntry>> queueEntry : queuesAccountsMap.entrySet()) {
+	    		List<ReportEntry> queueReportEntries = new ArrayList<ReportEntry>();
+	    		ReportEntry queueReportEntry = new ReportEntry();
+	    		queueReportEntry.setQueueName(queueEntry.getKey());
+	    		queueReportEntry.setTimeInMilliseconds(new Long(0));
+	    		for (String account : queueEntry.getValue().keySet()) {
+	    			ReportEntry accountEntry = queueEntry.getValue().get(account);
+	    			queueReportEntry.setJobCount(queueReportEntry.getJobCount() + accountEntry.getJobCount());
+	    			queueReportEntry.setTimeInMilliseconds(queueReportEntry.getTimeInMilliseconds() + accountEntry.getTimeInMilliseconds());
+	    			queueReportEntries.add(accountEntry);
+	    		}
+	    		reportEntries.addAll(queueReportEntries);
+	    		reportEntries.add(queueReportEntry);
+	    	}
+	    	return reportEntries;
 	    }
 	    
 	    //  Begin Getters and Setters

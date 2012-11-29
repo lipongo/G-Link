@@ -35,7 +35,7 @@ public class CacheUtil {
 		
 		//  Eventually find a way to scan in all files in the classes directory.
 		Properties properties = new Properties();
-		String PROPERTIES_FILE = "localgridEngine.prop";
+		String PROPERTIES_FILE = "gridEngine.prop";
 		try {
 			properties.load(CacheUtil.class.getClassLoader().getResourceAsStream(PROPERTIES_FILE));
 			this.properties = properties;

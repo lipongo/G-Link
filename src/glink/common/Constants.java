@@ -1,5 +1,8 @@
 package glink.common;
 
+import java.util.ArrayList;
+import java.util.List;
+
 //  Using the Constant Data Manager design pattern, store all immutable centrally accessible information. 
 public class Constants {
 
@@ -277,26 +280,121 @@ public class Constants {
 		public static final String SELECT_OFFSET_PLACE_HOLDER = "SELECT " + Tables.PlaceHolder.Fields.OFFSET + " FROM place_holder WHERE " + Tables.PlaceHolder.Fields.IS_LATEST + " = 1";
 		public static final String SELECT_LAST_RECORD_PLACE_HOLDER = "SELECT " + Tables.PlaceHolder.Fields.LAST_RECORD + " FROM place_holder WHERE " + Tables.PlaceHolder.Fields.IS_LATEST + " = 1";
 		public static final String SELECT_PROJECT_ACCOUNT_PROJECT_NAME_COUNT = "SELECT p." + Tables.Projects.Fields.PROJECT_NAME + " ,pa." + Tables.ProjectAccount.Fields.JOB_COUNT + " FROM " + Tables.Projects.NAME + " p, " + Tables.ProjectAccount.NAME + " pa WHERE pa." + Tables.ProjectAccount.Fields.PROJECT_ID + " = p." + Tables.Projects.Fields.ID; 
+		public static final String SELECT_PROJECT_REPORT_BY_TIME = "SELECT " + Tables.Accounting.Fields.PROJECT + ", " + Tables.Accounting.Fields.START_TIME + ", " + Tables.Accounting.Fields.END_TIME + " FROM " + Tables.Accounting.NAME + " WHERE " + Tables.Accounting.Fields.START_TIME + " > ? AND " + Tables.Accounting.Fields.END_TIME + " < ?";
+		public static final String SELECT_PROJECT_ACCOUNT_REPORT_BY_TIME = "SELECT " + Tables.Accounting.Fields.PROJECT + ", " + Tables.Accounting.Fields.OWNER + ", " + Tables.Accounting.Fields.START_TIME + ", " + Tables.Accounting.Fields.END_TIME + " FROM " + Tables.Accounting.NAME + " WHERE " + Tables.Accounting.Fields.START_TIME + " > ? AND " + Tables.Accounting.Fields.END_TIME + " < ?";
+		public static final String SELECT_ACCOUNTING_BY_TIME = "SELECT * FROM " + Tables.Accounting.NAME + " WHERE " + Tables.Accounting.Fields.START_TIME + " >  ? AND " + Tables.Accounting.Fields.END_TIME + " < ?"; 
 	}
 	
+	//  Reports with an * in the name do not have a Pie chart to go with them.
 	public static class Reports {
-		public static class Projects {
-			public static final String NAME = "Job Count By Project";
+		
+		public static class JobCountByProject {
+			
+			public static final String NAME = "All Projects";
 			
 			public static class Fields {
-				public static final String PROJECT = "Project";
-				public static final String JOB_COUNT = "Job Count";
+			
+				public static final String PROJECT = "Project Name";
+				public static final String TIME = "Time(hours)";
+				public static final String JOB_COUNT = "Job Count";		
+			}
+			
+			public static List<String> getFields() {
+				List<String> fields = new ArrayList<String>();
+				fields.add(Reports.JobCountByProject.Fields.PROJECT);
+				fields.add(Reports.JobCountByProject.Fields.TIME);
+				fields.add(Reports.JobCountByProject.Fields.JOB_COUNT);
+				return fields;
 			}
 		}
 		
-		public static class ProjectsUsers {
-			public static final String NAME = "Job Count By Project With Account Detail";
+		public static class AccountsReport{
+			public static final String NAME = "All Accounts";
 			
 			public static class Fields {
+				public static final String ACCOUNT = "Account Name";
+				public static final String TIME = "Time(hours)";
+				public static final String JOB_COUNT = "Job Count";						
+			}
+			
+			public static List<String> getFields() {
+				List<String> fields = new ArrayList<String>();
+				fields.add(Reports.AccountsReport.Fields.ACCOUNT);
+				fields.add(Reports.AccountsReport.Fields.TIME);
+				fields.add(Reports.AccountsReport.Fields.JOB_COUNT);
+				return fields;
+			}
+		}
+		
+		public static class QueuesReport{
+			public static final String NAME = "All Queues";
+			
+			public static class Fields {
+				public static final String QUEUE = "Queue Name";
+				public static final String TIME = "Time(hours)";
+				public static final String JOB_COUNT = "Job Count";						
+			}
+			
+			public static List<String> getFields() {
+				List<String> fields = new ArrayList<String>();
+				fields.add(Reports.QueuesReport.Fields.QUEUE);
+				fields.add(Reports.QueuesReport.Fields.TIME);
+				fields.add(Reports.QueuesReport.Fields.JOB_COUNT);
+				return fields;
+			}
+		}
+
+		public static class QueuesByAccountReport{
+			public static final String NAME = "Queues With Account Detail*";
+			
+			public static class Fields {
+				public static final String QUEUE = "Queue Name";
+				public static final String ACCOUNT = "Account";
+				public static final String TIME = "Time(hours)";
+				public static final String JOB_COUNT = "Job Count";						
+			}
+			
+			public static List<String> getFields() {
+				List<String> fields = new ArrayList<String>();
+				fields.add(Reports.QueuesByAccountReport.Fields.QUEUE);
+				fields.add(Reports.QueuesByAccountReport.Fields.ACCOUNT);
+				fields.add(Reports.QueuesByAccountReport.Fields.TIME);
+				fields.add(Reports.QueuesByAccountReport.Fields.JOB_COUNT);
+				return fields;
+			}
+		}
+		
+		public static class ProjectsByAccountReport {
+		
+			public static final String NAME = "Project With Account Detail*";
+			
+			public static class Fields {
+			
 				public static final String PROJECT = "Project";
 				public static final String JOB_COUNT = "Job Count";
 				public static final String ACCOUNT = "Account";
+				public static final String TIME = "Time(hours)";
 			}
+			
+			public static List<String> getFields() {
+				List<String> fields = new ArrayList<String>();
+				fields.add(Reports.ProjectsByAccountReport.Fields.PROJECT);
+				fields.add(Reports.ProjectsByAccountReport.Fields.ACCOUNT);
+				fields.add(Reports.ProjectsByAccountReport.Fields.TIME);
+				fields.add(Reports.ProjectsByAccountReport.Fields.JOB_COUNT);
+				return fields;
+			}
+		}		
+		
+		public static List<String> getReports() {
+			List<String> reports = new ArrayList<String>();
+			reports.add(Reports.AccountsReport.NAME);
+			reports.add(Reports.JobCountByProject.NAME);
+			reports.add(Reports.ProjectsByAccountReport.NAME);
+			//  Currently has a bug.  Commented out till fixed.
+			//reports.add(Reports.QueuesByAccountReport.NAME);
+			reports.add(Reports.QueuesReport.NAME);
+			return reports;
 		}
 	}
 	

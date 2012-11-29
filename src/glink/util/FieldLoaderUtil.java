@@ -106,6 +106,10 @@ public class FieldLoaderUtil {
 		offset = randomAccessFile.getFilePointer();
 
 		if ( i > 0) {
+			//  This if statement is an attempt to handle the single record update bug.  Need to test
+			if (i == 1) {
+				dao.updateLastRecord(offset, lastLine);
+			}
 			// Update place_holder
 			dao.updateLastRecord(lastOffset, lastLine);
 		}

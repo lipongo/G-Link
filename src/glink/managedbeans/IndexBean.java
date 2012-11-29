@@ -15,8 +15,7 @@ public class IndexBean extends ParentBean {
 	private boolean isConnected = false;
 	
 	public IndexBean() throws SQLException {
-		GlinkDAO dao = new GlinkDAO();
-		setIsConnected(dao.getConnectionState());
+
 	}
 
 	public boolean getIsConnected() {

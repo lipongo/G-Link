@@ -4,26 +4,41 @@
       xmlns:t="http://myfaces.apache.org/tomahawk"
       xmlns:ui="http://java.sun.com/jsf/facelets"
       template="Template.xhtml">
-      
 	<ui:define name="contentTitle">
 		<p class="main_title">Reports</p>
   </ui:define>
 	<ui:define name="contentBody">  
-		<p class="main_text">The Reports page will display the various reports to select from and allow for different ranges.  There should
-		be graphical displays and will eventually be AJAX.<br /></p>
-		<br/><br/>
-		<h:dataTable value="#{reports.reportEntries}" var="entries">
-			<h:column>
-			<f:facet name="header" ><h:outputText>Project Name</h:outputText>
-			</f:facet>
-			<h:outputText value="#{entries.projectName}" />
-			</h:column>
-			<h:column>
-				<f:facet name="header"><h:outputText>Job Count</h:outputText>
-				</f:facet>
-				<h:outputText value="#{entries.jobCount}" />
-			</h:column>
-		</h:dataTable>
+		
+		<h:form id="reportsForm" >
+		<h:outputLabel>Select a Report:</h:outputLabel><br/><font size="-1"><i>* No chart associated with report</i></font><br/>
+		<h:selectOneMenu id="reportType" size='25' value='#{reports.reportName}' >
+			<f:selectItems value='#{reports.reports}' />
+		</h:selectOneMenu><br/>
+		<p class="main_text">
+			Start Date:<br /><t:inputCalendar id='startDate' maxlength='10' value='#{reports.startDate}' monthYearRowClass="monthYearRowClass" 
+																				weekRowClass="weekRowClass" dayCellClass="dayCellClass" currentDayCellClass="currentDayCellClass" 
+																				popupTodayString="" popupWeekString="WK" renderAsPopup="true" renderPopupButtonAsImage="true" 
+																				popupDateFormat="MM/dd/yyyy" styleClass="cal" alt="Calendar" title="Calendar"/>
+			<br />
+			End Date:<br /><t:inputCalendar id='endDate' maxlength='10' value='#{reports.endDate}' monthYearRowClass="monthYearRowClass" 
+																			weekRowClass="weekRowClass" dayCellClass="dayCellClass" currentDayCellClass="currentDayCellClass" 
+																			popupTodayString="" popupWeekString="WK" renderAsPopup="true" renderPopupButtonAsImage="true" 
+																			popupDateFormat="MM/dd/yyyy" alt="Calendar" title="Calendar"/>
+ 			<br/>
+ 			<h:inputHidden id="reportData" value="#{reports.reportData}" />
+ 			<h:commandButton id="go" value='Go'>
+ 				<f:ajax onevent="getStatus" execute="@form" listener="#{reports.generateReports}" render="reportData dataTablePanel"/>
+ 			</h:commandButton>
+		</p>
+
+
+		<div align="center" id="loader" style="display: none;" ><img src="images/ajaxloader.gif" /><br/>Loading...</div>
+		<h:panelGroup id='dataTablePanel' binding='#{reports.reportDataPanel}' /><br/>
+				<a id="showChart" onclick="showChart();" href="javascript:void(0);" style="display: none;">Show Chart</a>
+		<a id="hideChart" onclick="showChart();" href="javascript:void(0);" style="display: none;">Hide Chart</a><br/>
+		</h:form>
+		<i id="pieProject" style="display: none;">Hover on slice to see project name below:</i><br/>
+		<div id="piechartdiv" />
 	</ui:define>
 </ui:composition>
     

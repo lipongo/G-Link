@@ -4,10 +4,13 @@
 
 /* --------------------------------------------------------------------------------------------------------- */
 
-
 html {height: 100%;} 
 
 body {height: 100%;}
+
+.monthYearRowClass {
+	width: 10px;
+}
 
 #wrap {min-height: 100%;background:none;
   margin: 0 auto 0 auto;
@@ -104,7 +107,7 @@ a {
 }
 
 a:hover {
-  color:#09F;
+  color: red;
 }
 
 a.img {
@@ -186,7 +189,7 @@ margin-right:30px;
 
 #navlist a:hover{
   text-decoration: none;
-  color:#000;
+  color: red;
 }
 
 #navlist a.active{
@@ -196,7 +199,9 @@ margin-right:30px;
   color:#000;
 }
 
-
+#navlist a.active:hover{
+	color: red;
+}
 
 /* TABLE */
 table {
@@ -310,8 +315,5 @@ a.footer:hover {
 	width: 100px;
 }
 
-#chart {
-	height:	480px;
-	width:	640px;
-}
-	
+
+
