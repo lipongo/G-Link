@@ -95,7 +95,6 @@ public class FieldLoaderUtil {
 			}
 			
 			i++;
-			System.out.println(offset + " - " + line);
 			lastLine = line;
 			line = randomAccessFile.readLine();
 			if (line != null) {
@@ -107,9 +106,9 @@ public class FieldLoaderUtil {
 
 		if ( i > 0) {
 			//  This if statement is an attempt to handle the single record update bug.  Need to test
-			if (i == 1) {
-				dao.updateLastRecord(offset, lastLine);
-			}
+		//	if (i == 1) {
+			//	dao.updateLastRecord(offset, lastLine);
+		//	}
 			// Update place_holder
 			dao.updateLastRecord(lastOffset, lastLine);
 		}

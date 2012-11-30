@@ -8,10 +8,6 @@ html {height: 100%;}
 
 body {height: 100%;}
 
-.monthYearRowClass {
-	width: 10px;
-}
-
 #wrap {min-height: 100%;background:none;
   margin: 0 auto 0 auto;
   width:1034px;}
@@ -158,10 +154,10 @@ a.img:hover {
   width: 265px; 
 }
 
-.navspacer{
+/*.navspacer{
 margin-right:30px;
 }
-
+*/
 #navlist {
 	width:100%;
   height:25px;
@@ -204,7 +200,7 @@ margin-right:30px;
 }
 
 /* TABLE */
-table {
+span.dataTablePanel table {
   font: 11px/24px Verdana, Arial, Helvetica, sans-serif;
   border-collapse: collapse;
   width: 620px;
@@ -212,41 +208,41 @@ table {
   margin-top:30px;
 }
 
-th {
+span.dataTablePanel th {
   padding: 3px 3px 3px 3px;
   text-align: left;
   color:#444;
 }
 
-td {
+span.dataTablePanel td {
   border-top: 1px solid #CCC;
   border-bottom: 1px solid #CCC;
   padding: 7px 5px 7px 9px;
 }
 
-td:first-child {
+span.dataTablePanel td:first-child {
   width: 600px;
 }
 
-td.column_one {
+span.dataTablePanel td.column_one {
   width: 150px;
 }
 	
-td.column_two {
+span.dataTablePanel td.column_two {
   width: 250px;
 }
 
-td+td {
+span.dataTablePanel td+td {
   border-left:;
   text-align: left;
 }
 
-td.postdoc{
+span.dataTablePanel td.postdoc{
   width: 550px;
 }
 
 
-
+*/
 /* footer */
 div#footer{
 	position: relative;

@@ -3,6 +3,7 @@ package glink.dao;
 import glink.common.Constants;
 import glink.common.Constants.GridEngineTypes;
 import glink.common.Constants.Queries;
+import glink.common.Constants.Reports;
 import glink.common.Constants.Tables;
 import glink.interfaces.models.ReportEntry;
 
@@ -11,6 +12,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Statement;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
@@ -259,11 +261,11 @@ public final class GlinkDAO {
 	    }
 	    
 	    private int getProjectAccountCount(String accountName, String projectName) throws SQLException {
-	    	PreparedStatement selectProjectAccountCountQuery = databaseConnection.prepareStatement(Queries.SELECT_PROJECT_ACCOUNT_COUNT_BY_PROJECT_NAME_AND_ACCOUNT_NAME);
+	    	PreparedStatement selectProjectAccountCountQuery = databaseConnection.prepareStatement(Queries.SELECT_PROJECT_ACCOUNT_COUNT_BY_PROJECT_NAME_AND_ACCOUNT_NAME,ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+	    	selectProjectAccountCountQuery.setFetchSize(Integer.MIN_VALUE);
 	    	selectProjectAccountCountQuery.setString(1, projectName);
 	    	selectProjectAccountCountQuery.setString(2, accountName);
-	    	selectProjectAccountCountQuery.execute();
-	    	ResultSet selectProjectAccountCountQueryResults = selectProjectAccountCountQuery.getResultSet();
+	    	ResultSet selectProjectAccountCountQueryResults = selectProjectAccountCountQuery.executeQuery();
 	    	if (selectProjectAccountCountQueryResults.getRow() > 0) {
 	    		if (selectProjectAccountCountQueryResults.next()) {
 //	    			log.error("Get count for project " + projectName + "and account " + accountName + "returned more than one result");
@@ -282,14 +284,17 @@ public final class GlinkDAO {
 	    }
 	    
 	    public List<ReportEntry> getProjectsReport(Long startTime, Long endTime) throws SQLException {
+	    	int records = 0;
+	    	long queryStartTime = System.currentTimeMillis();
 	    	openConnection();
-	    	PreparedStatement selectProjectReportQuery = databaseConnection.prepareStatement(Queries.SELECT_PROJECT_REPORT_BY_TIME);
+	    	PreparedStatement selectProjectReportQuery = databaseConnection.prepareStatement(Queries.SELECT_PROJECT_REPORT_BY_TIME,ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+	    	selectProjectReportQuery.setFetchSize(Integer.MIN_VALUE);
 	    	selectProjectReportQuery.setLong(1, startTime/1000);
 	    	selectProjectReportQuery.setLong(2, endTime/1000);
-	    	selectProjectReportQuery.execute();
-	    	ResultSet selectProjectReportQueryResults = selectProjectReportQuery.getResultSet();
+	    	ResultSet selectProjectReportQueryResults = selectProjectReportQuery.executeQuery();
 	    	HashMap<String, ReportEntry> entries = new HashMap<String, ReportEntry>();
 	    	while (selectProjectReportQueryResults.next()) {
+	    		records++;
 	    		if (entries.containsKey(selectProjectReportQueryResults.getString(Tables.Accounting.Fields.PROJECT))) {
 	    			ReportEntry reportEntry = entries.get(selectProjectReportQueryResults.getString(Tables.Accounting.Fields.PROJECT));
 	    			int jobCount = reportEntry.getJobCount();
@@ -310,16 +315,20 @@ public final class GlinkDAO {
 	    	for (Map.Entry<String, ReportEntry> entry : entries.entrySet()) {
 	    		reportEntries.add(entry.getValue());
 	    	}
+	    	long queryEndTime = System.currentTimeMillis();
+	    	recordCounter(records, queryStartTime, queryEndTime, "Projects Report Query");
 	    	return reportEntries;
 	    }
 	    
 	    public List<ReportEntry> getProjectsAccountReport(Long startTime, Long endTime) throws SQLException {
+	    	int records = 0;
+	    	long queryStartTime = System.currentTimeMillis();
 	    	openConnection();
-	    	PreparedStatement selectProjectReportQuery = databaseConnection.prepareStatement(Queries.SELECT_PROJECT_ACCOUNT_REPORT_BY_TIME);
+	    	PreparedStatement selectProjectReportQuery = databaseConnection.prepareStatement(Queries.SELECT_PROJECT_ACCOUNT_REPORT_BY_TIME,ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+	    	selectProjectReportQuery.setFetchSize(Integer.MIN_VALUE);
 	    	selectProjectReportQuery.setLong(1, startTime/1000);
 	    	selectProjectReportQuery.setLong(2, endTime/1000);
-	    	selectProjectReportQuery.execute();
-	    	ResultSet selectProjectReportQueryResults = selectProjectReportQuery.getResultSet();
+	    	ResultSet selectProjectReportQueryResults = selectProjectReportQuery.executeQuery();
 	    	HashMap<String, HashMap<String, ReportEntry>> entries = new HashMap<String, HashMap<String, ReportEntry>>();
 	    	while (selectProjectReportQueryResults.next()) {
 	    		if (entries.containsKey(selectProjectReportQueryResults.getString(Tables.Accounting.Fields.PROJECT))) {
@@ -370,16 +379,20 @@ public final class GlinkDAO {
 	    		reportEntries.add(projectReportEntry);
 	    		reportEntries.addAll(projectAccountEntries);
 	    	}
+	    	long queryEndTime = System.currentTimeMillis();
+	    	recordCounter(records, queryStartTime, queryEndTime, "Projects with Account Details Report Query");
 	    	return reportEntries;
 	    }
 	    
 	    public List<ReportEntry> getJobCountByAccounts(Long startTime, Long endTime) throws SQLException {
+	    	int records = 0;
+	    	long queryStartTime = System.currentTimeMillis();
 	    	openConnection();
-	    	PreparedStatement selectAccountingQuery = databaseConnection.prepareStatement(Queries.SELECT_ACCOUNTING_BY_TIME);
+	    	PreparedStatement selectAccountingQuery = databaseConnection.prepareStatement(Queries.SELECT_ACCOUNTING_BY_TIME,ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+	    	selectAccountingQuery.setFetchSize(Integer.MIN_VALUE);
 	    	selectAccountingQuery.setLong(1, startTime/1000);
 	    	selectAccountingQuery.setLong(2, endTime/1000);
-	    	selectAccountingQuery.execute();
-	    	ResultSet selectAccountingQueryResults = selectAccountingQuery.getResultSet();
+	    	ResultSet selectAccountingQueryResults = selectAccountingQuery.executeQuery();
 	    	HashMap<String, ReportEntry> accountsMap  = new HashMap<String, ReportEntry>();
 	    	while (selectAccountingQueryResults.next()) {
 	    		if (accountsMap.containsKey(selectAccountingQueryResults.getString(Tables.Accounting.Fields.OWNER))) {
@@ -400,16 +413,20 @@ public final class GlinkDAO {
 	    	for (Map.Entry<String, ReportEntry> entry : accountsMap.entrySet()) {
 	    		reportEntries.add(entry.getValue());
 	    	}
+	    	long queryEndTime = System.currentTimeMillis();
+	    	recordCounter(records, queryStartTime, queryEndTime, "Accounts Report Query");
 	    	return reportEntries;
 	    }
-	    
+
 	    public List<ReportEntry> getJobCountByQueues(Long startTime, Long endTime) throws SQLException {
+	    	int records = 0;
+	    	long queryStartTime = System.currentTimeMillis();
 	    	openConnection();
-	    	PreparedStatement selectAccountingQuery = databaseConnection.prepareStatement(Queries.SELECT_ACCOUNTING_BY_TIME);
+	    	PreparedStatement selectAccountingQuery = databaseConnection.prepareStatement(Queries.SELECT_ACCOUNTING_BY_TIME,ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+	    	selectAccountingQuery.setFetchSize(Integer.MIN_VALUE);
 	    	selectAccountingQuery.setLong(1, startTime/1000);
 	    	selectAccountingQuery.setLong(2, endTime/1000);
-	    	selectAccountingQuery.execute();
-	    	ResultSet selectAccountingQueryResults = selectAccountingQuery.getResultSet();
+	    	ResultSet selectAccountingQueryResults = selectAccountingQuery.executeQuery();
 	    	HashMap<String, ReportEntry> queuesMap  = new HashMap<String, ReportEntry>();
 	    	while (selectAccountingQueryResults.next()) {
 	    		if (queuesMap.containsKey(selectAccountingQueryResults.getString(Tables.Accounting.Fields.QUEUE_NAME))) {
@@ -430,16 +447,20 @@ public final class GlinkDAO {
 	    	for (Map.Entry<String, ReportEntry> entry : queuesMap.entrySet()) {
 	    		reportEntries.add(entry.getValue());
 	    	}
+	    	long queryEndTime = System.currentTimeMillis();
+	    	recordCounter(records, queryStartTime, queryEndTime, "Queues Report Query");
 	    	return reportEntries;
 	    }
-	    //  Known bug, only one account is ever added per a queue, look into this.
+
 	    public List<ReportEntry> getQueuesAccountsReport(Long startTime, Long endTime) throws SQLException {
+	    	int records = 0;
+	    	long queryStartTime = System.currentTimeMillis();
 	    	openConnection();
-	    	PreparedStatement selectAccountingQuery = databaseConnection.prepareStatement(Queries.SELECT_ACCOUNTING_BY_TIME);
+	    	PreparedStatement selectAccountingQuery = databaseConnection.prepareStatement(Queries.SELECT_ACCOUNTING_BY_TIME,ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+	    	selectAccountingQuery.setFetchSize(Integer.MIN_VALUE);
 	    	selectAccountingQuery.setLong(1, startTime/1000);
 	    	selectAccountingQuery.setLong(2, endTime/1000);
-	    	selectAccountingQuery.execute();
-	    	ResultSet selectAccountingQueryResults = selectAccountingQuery.getResultSet();
+	    	ResultSet selectAccountingQueryResults = selectAccountingQuery.executeQuery();
 	    	HashMap<String, HashMap<String, ReportEntry>> queuesAccountsMap  = new HashMap<String, HashMap<String, ReportEntry>>();
 	    	while (selectAccountingQueryResults.next()) {
 	    		if (queuesAccountsMap.containsKey(selectAccountingQueryResults.getString(Tables.Accounting.Fields.QUEUE_NAME))) {
@@ -456,7 +477,7 @@ public final class GlinkDAO {
 	    				reportEntry.setJobCount(1);
 	    				reportEntry.setAccountName(selectAccountingQueryResults.getString(Tables.Accounting.Fields.OWNER));
 	    				reportEntry.setTimeInMilliseconds(selectAccountingQueryResults.getLong(Tables.Accounting.Fields.END_TIME) - selectAccountingQueryResults.getLong(Tables.Accounting.Fields.START_TIME));
-	    				HashMap<String, ReportEntry> accountsMap = new HashMap<String, ReportEntry>();
+	    				HashMap<String, ReportEntry> accountsMap = queuesAccountsMap.get(selectAccountingQueryResults.getString(Tables.Accounting.Fields.QUEUE_NAME));
 	    				accountsMap.put(selectAccountingQueryResults.getString(Tables.Accounting.Fields.OWNER), reportEntry);
 	    				queuesAccountsMap.put(selectAccountingQueryResults.getString(Tables.Accounting.Fields.QUEUE_NAME), accountsMap);
 	    			}
@@ -470,7 +491,7 @@ public final class GlinkDAO {
     				accountsMap.put(selectAccountingQueryResults.getString(Tables.Accounting.Fields.OWNER), reportEntry);
     				queuesAccountsMap.put(selectAccountingQueryResults.getString(Tables.Accounting.Fields.QUEUE_NAME), accountsMap);
 	    		}
-	    	}
+	    	} 	
 	    	closeConnection();
 	    	List<ReportEntry> reportEntries = new ArrayList<ReportEntry>();
 	    	for (Map.Entry<String, HashMap<String, ReportEntry>> queueEntry : queuesAccountsMap.entrySet()) {
@@ -484,10 +505,18 @@ public final class GlinkDAO {
 	    			queueReportEntry.setTimeInMilliseconds(queueReportEntry.getTimeInMilliseconds() + accountEntry.getTimeInMilliseconds());
 	    			queueReportEntries.add(accountEntry);
 	    		}
-	    		reportEntries.addAll(queueReportEntries);
 	    		reportEntries.add(queueReportEntry);
-	    	}
+	    		reportEntries.addAll(queueReportEntries);
+	    	}	    
+	    	long queryEndTime = System.currentTimeMillis();
+	    	recordCounter(records, queryStartTime, queryEndTime, "Queues with Account Details Report Query");
 	    	return reportEntries;
+	    }
+	    
+	    private void recordCounter(int records, long queryStartTime, long queryEndTime, String queryName) {
+	    	StringBuilder messageBuilder = new StringBuilder();
+	    	messageBuilder.append("Query ").append(queryName).append(" proccessed ").append(records).append(" records in ").append((queryEndTime - queryStartTime)).append(" milliseconds");
+	    	log.info(messageBuilder.toString());
 	    }
 	    
 	    //  Begin Getters and Setters

@@ -392,7 +392,7 @@ public class Constants {
 			reports.add(Reports.JobCountByProject.NAME);
 			reports.add(Reports.ProjectsByAccountReport.NAME);
 			//  Currently has a bug.  Commented out till fixed.
-			//reports.add(Reports.QueuesByAccountReport.NAME);
+			reports.add(Reports.QueuesByAccountReport.NAME);
 			reports.add(Reports.QueuesReport.NAME);
 			return reports;
 		}

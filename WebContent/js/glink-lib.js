@@ -58,6 +58,7 @@ function pieChart(){
 	var plot1 = jQuery.jqplot ('piechartdiv', [data],
 			
 			{
+	//	seriesColors: ["#FF0000","#00FF00","#0000FF","#FF00FF","#00FFFF","#FFFF00","#FF7F00","","#CC0099","#FF66CC","#FFFF99","FFFF#FF" ],
 		seriesDefaults: {
 			// Make this a pie chart.
 			renderer: jQuery.jqplot.PieRenderer, 
