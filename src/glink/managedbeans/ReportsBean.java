@@ -76,9 +76,9 @@ public class ReportsBean extends ParentBean {
 				stringBuilder.append("[ ");
 				for (ReportEntry reportEntry : reportEntries) {
 					DecimalFormat df = new DecimalFormat("#.##");
-					String timeInSeconds = df.format(reportEntry.getTimeInMilliseconds()/3600.00);
-					stringBuilder.append("['").append(reportEntry.getProjectName()).append("',").append(timeInSeconds).append("],");
-					entries.add(Arrays.asList(new String[] {reportEntry.getProjectName(), timeInSeconds, String.valueOf(reportEntry.getJobCount()) }));
+					String timeInHours = df.format(reportEntry.getTimeInMilliseconds()/3600.00);
+					stringBuilder.append("['").append(reportEntry.getProjectName()).append("',").append(timeInHours).append("],");
+					entries.add(Arrays.asList(new String[] {reportEntry.getProjectName(), timeInHours, String.valueOf(reportEntry.getJobCount()) }));
 				}
 				this.reportData = (stringBuilder.substring(0, stringBuilder.length() -1))  + " ]";
 			} else if (reportName.equalsIgnoreCase(Reports.ProjectsByAccountReport.NAME)) {

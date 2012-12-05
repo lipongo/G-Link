@@ -31,7 +31,7 @@ public final class GlinkDAO {
 
 		//  Setting up database connection variables
 		private Properties properties = new Properties();
-		private static final String PROPERTIES_FILE = "database.prop";
+		private static final String PROPERTIES_FILE = "localdatabase.prop";
 		
 	    private String databaseServer;
 		

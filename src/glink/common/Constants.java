@@ -398,4 +398,12 @@ public class Constants {
 		}
 	}
 	
+	public static class APIReportTypes {
+		public static final String AllAccounts = "AllAccounts";
+		public static final String AllProjects = "AllProjects";
+		public static final String AllProjectsAccountDetails = "AllProjectsAccountDetails";
+		public static final String AllQueues = "AllQueues";
+		public static final String AllQueuesAccountDetails = "AllQueuesAccountDetails";
+	}
+	
 }
