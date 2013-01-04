@@ -6,6 +6,8 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
@@ -29,6 +31,7 @@ public class FieldLoaderUtil {
 	}
 	
 	public void readAccountingFile() throws SQLException, IOException {
+
 		File file = new File(accountingFile);
 		RandomAccessFile randomAccessFile = new RandomAccessFile(file, "r");
 		GlinkDAO dao = new GlinkDAO();

@@ -29,13 +29,16 @@ function getStatus(event) {
     switch (status) {
         case "begin": // Before the ajax request is sent.
         	document.getElementById("loader").style.display = "block";
+        	document.getElementById("reportsForm:go").disabled = "true";
             break;
 
         case "complete": // After the ajax response is arrived.
             document.getElementById("loader").style.display = "none"; 
+        	document.getElementById("reportsForm:go").removeAttribute("disabled");
             break;
 
         case "success": // After update of HTML DOM based on ajax response..
+        	document.getElementById("downloadCSV").style.display="block";
         	if (document.getElementById("reportsForm:reportType").value != "Project With Account Detail*" && document.getElementById("reportsForm:reportType").value != "Queues With Account Detail*" ) {
         		pieChart();
         	} else {
@@ -47,6 +50,7 @@ function getStatus(event) {
 
 function pieChart(){
 	var reportData = document.getElementById("reportsForm:reportData").value;
+	if (reportData != null && reportData.length > 3) {
 	var data = eval ( reportData );
 	//  Clear div prechart draw.
 	document.getElementById("piechartdiv").style.display = "block";
@@ -84,6 +88,7 @@ function pieChart(){
 			}
 	); 
 	showChart();
+	}
 }
 
 function showChart() {

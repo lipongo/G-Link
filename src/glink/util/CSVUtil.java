@@ -7,7 +7,7 @@ import java.util.List;
 
 import glink.common.Constants.Reports;
 import glink.dao.GlinkDAO;
-import glink.interfaces.models.ReportEntry;
+import glink.models.ReportEntry;
 
 public class CSVUtil {
 	

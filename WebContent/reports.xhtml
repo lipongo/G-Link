@@ -27,12 +27,13 @@
  			<br/>
  			<h:inputHidden id="reportData" value="#{reports.reportData}" />
  			<h:commandButton id="go" value='Go'>
- 				<f:ajax onevent="getStatus" execute="@form" listener="#{reports.generateReports}" render="reportData dataTablePanel"/>
+ 				<f:ajax onevent="getStatus" execute="@form" listener="#{reports.generateReports}" render="reportData dataTablePanel downloadCSVLink"/>
  			</h:commandButton>
 		</p>
 
-
 		<div align="center" id="loader" style="display: none;" ><img src="images/ajaxloader.gif" /><br/>Loading...</div>
+	
+		<br/><div id="downloadCSV" style="display: none"><h:outputLink id="downloadCSVLink" value="#{reports.downloadableCSV}">Download CSV</h:outputLink></div>
 		<h:panelGroup id='dataTablePanel' binding='#{reports.reportDataPanel}'  class="dataTablePanel"/><br/>
 				<a id="showChart" onclick="showChart();" href="javascript:void(0);" style="display: none;">Show Chart</a>
 		<a id="hideChart" onclick="showChart();" href="javascript:void(0);" style="display: none;">Hide Chart</a><br/>
